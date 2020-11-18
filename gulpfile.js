@@ -3,16 +3,9 @@ var gulp = require ('gulp'),
     csso = require('gulp-csso'),
     rename = require("gulp-rename"),
     browserSync = require('browser-sync').create();
+    autoprefixer = require('gulp-autoprefixer');
+    sourcemaps = require('gulp-sourcemaps');
 
-
-gulp.task('csso', function () {
-    return gulp.src('dist/css/all.css')
-        .pipe(csso())
-        .pipe(rename({
-            suffix: ".mini",
-        }))
-        .pipe(gulp.dest('dist/css/'));
-});
 
 gulp.task('sync', function () {
     browserSync.init({
@@ -27,10 +20,41 @@ gulp.task('sync', function () {
 
 });
 
-gulp.task('styles', function() {
+gulp.task('default', function () {
     return gulp.src(['./src/css/normalize.css', './src/css/main.css'])
+        .pipe(sourcemaps.init())
+        .pipe(autoprefixer(
+            {
+                overrideBrowserslist: ['last 2 versions'],
+                cascade: false}
+        ))
         .pipe(concat('all.css'))
-        .pipe(gulp.dest('./dist/css/'));
+        .pipe(csso())
+        .pipe(rename({
+            suffix: ".mini",
+        }))
+        .pipe(sourcemaps.write())
+        .pipe(gulp.dest('dist/css/'));
 });
 
-gulp.task('default', gulp.parallel('sync', 'styles', 'csso'));
+//объединение стилей, если подключать отдельно
+// gulp.task('styles', function() {
+//     return gulp.src(['./src/css/normalize.css', './src/css/main.css'])
+//         .pipe(concat('all.css'))
+//         .pipe(gulp.dest('./dist/css/'));
+// });
+
+//автопрефиксер, если подключать в качестве отдельной задачи
+// gulp.task('autopref', function () {
+//     return gulp.src('./src/css/main.css')
+//         .pipe(autoprefixer({
+//             browsers: ['last 2 versions'],
+//             cascade: false
+//         }))
+//         .pipe(gulp.dest('./dist/css/'));
+// })
+
+//
+// gulp.task('default', gulp.parallel('sync', 'styles', 'default'));
+
+gulp.task('default', gulp.parallel('sync','default'));
